@@ -1,0 +1,84 @@
+#!/usr/bin/python3
+import argparse
+import os
+import json
+
+# Global paths
+config_path = os.path.join(os.getenv("HOME"), ".conn2_config")
+servers_file = os.path.join(config_path,"servers.json")
+
+# Configuracion
+if(not os.path.isdir(config_path)):
+    os.mkdir(config_path)
+if(not os.path.exists(servers_file)):
+    open(servers_file,'x').close()
+
+servers = open(servers_file,'r+')
+
+"""if(servers.read() == ""):
+    servers.write("[]")
+    servers.close()
+    servers = open(servers_file,'r+')"""
+
+#servers.close()
+
+parser = argparse.ArgumentParser()
+parser.add_argument("action", help="Value between 'new', 'list' or the 'server name' you registered with 'new' action")
+args = parser.parse_args()
+
+
+
+servers_json_raw = servers.read()
+if(servers_json_raw == ""):
+    servers_json_raw = "{}"
+
+servers_json = json.loads(servers_json_raw)
+
+if(args.action == "new"):
+    prompt = "> "
+    print("Registering a new server")
+    print()
+    print("Server address: (Can be a IP or a Domain name)")
+    server = input(prompt)
+
+    print()
+    print("Port: (22 default)")
+    port = input(prompt)
+    if(port == ""):
+        port = "22"
+
+    print()
+    print("Username: (Optional)")
+    user = input(prompt)
+
+    print()
+    print("Name of the server: (The name you will use with the command conn2)")
+    name = input(prompt)
+
+    connection_string = server
+
+    if(user != ""):
+        connection_string = user + "@" + connection_string
+
+    if(port != ""):
+        connection_string = connection_string + " -p " + port
+
+    servers_json[name] = connection_string
+
+    servers.write(json.dumps(servers_json))
+
+    servers.close()
+
+    print("Great! Now you can connect to your server using: conn2 " + name)
+
+elif(args.action == "list"):
+    print("Listing all the connections")
+    print()
+    for attr, value in servers_json.items():
+        print("Key: " + attr, "\t\tConnection: " + value)
+    servers.close()
+else:
+    os.system("clear")
+    print("Connecting to {} ...".format(args.action))
+    os.system("ssh " + servers_json[args.action])
+    servers.close()
