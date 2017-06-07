@@ -3,11 +3,9 @@ import argparse
 import os
 import json
 
-# Global paths
 config_path = os.path.join(os.getenv("HOME"), ".conn2_config")
 servers_file = os.path.join(config_path,"servers.json")
 
-# Configuracion
 if(not os.path.isdir(config_path)):
     os.mkdir(config_path)
 if(not os.path.exists(servers_file)):
@@ -15,18 +13,9 @@ if(not os.path.exists(servers_file)):
 
 servers = open(servers_file,'r+')
 
-"""if(servers.read() == ""):
-    servers.write("[]")
-    servers.close()
-    servers = open(servers_file,'r+')"""
-
-#servers.close()
-
 parser = argparse.ArgumentParser()
 parser.add_argument("action", help="Value between 'new', 'list' or the 'server name' you registered with 'new' action")
 args = parser.parse_args()
-
-
 
 servers_json_raw = servers.read()
 if(servers_json_raw == ""):
@@ -64,6 +53,8 @@ if(args.action == "new"):
         connection_string = connection_string + " -p " + port
 
     servers_json[name] = connection_string
+    servers.seek(0)
+    servers.truncate()
 
     servers.write(json.dumps(servers_json))
 
